@@ -188,11 +188,17 @@ DRB.Xrm.RetrieveBatch = function (queries) {
  * @param {any[]} batchedQueries Batched Queries
  */
 DRB.Xrm.RetrieveBatches = function (batchedQueries) {
+    var MaximumBatchSize = 100;
     var xrmCalls = [];
     batchedQueries.forEach(function (batchedQuery) {
         var queries = [];
         batchedQuery.forEach(function (query) { queries.push(query); });
-        xrmCalls.push(DRB.Xrm.RetrieveBatch(queries));
+
+        // Split queries into smaller batches of 100 or fewer operations
+        for (var i = 0; i < queries.length; i += MaximumBatchSize) {
+            var batch = queries.slice(i, i + MaximumBatchSize);
+            xrmCalls.push(DRB.Xrm.RetrieveBatch(batch));
+        }
     });
     return $.when.apply($, xrmCalls);
 }
